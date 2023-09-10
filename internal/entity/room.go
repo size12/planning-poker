@@ -2,21 +2,28 @@ package entity
 
 import (
 	"errors"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/size12/planning-poker/internal/entity/voting"
 )
 
-var ErrPlayerNotFound = errors.New("player with such ID not found")
+var ErrPlayerNotFound = errors.New("player with such ID does not exists")
+var ErrEmptyRoomName = errors.New("room can't have empty name")
 
 type Room struct {
-	id      uuid.UUID
-	name    string
-	players []*Player
-	status  voting.Status
+	ID      uuid.UUID     `json:"id"`
+	Name    string        `json:"name"`
+	Players []*Player     `json:"players"`
+	Status  voting.Status `json:"status"`
+
+	updateTime time.Time
 }
 
 func NewRoom(name string) (*Room, error) {
+	if name == "" {
+		return nil, ErrEmptyRoomName
+	}
 	id, err := uuid.NewUUID()
 	if err != nil {
 		return nil, err
@@ -24,46 +31,59 @@ func NewRoom(name string) (*Room, error) {
 
 	players := make([]*Player, 0, 5)
 	return &Room{
-		id:      id,
-		name:    name,
-		players: players,
+		ID:         id,
+		Name:       name,
+		Players:    players,
+		Status:     voting.StatusVoting,
+		updateTime: time.Now(),
 	}, nil
 }
 
-func (r *Room) ID() (uuid.UUID, error) {
-	return r.id, nil
-}
-
-func (r *Room) Name() (string, error) {
-	return r.name, nil
-}
-
 func (r *Room) AddPlayer(player *Player) error {
-	r.players = append(r.players, player)
+	r.Players = append(r.Players, player)
 	return nil
 }
 
 func (r *Room) RemovePlayer(ID uuid.UUID) error {
-	for index, player := range r.players {
-		if player.ID() == ID {
-			r.players = append(r.players[:index], r.players[index+1:]...)
+	for index, player := range r.Players {
+		if player.ID == ID {
+			r.Players = append(r.Players[:index], r.Players[index+1:]...)
 			return nil
 		}
 	}
 	return ErrPlayerNotFound
 }
 
+func (r *Room) PlayerByID(ID uuid.UUID) (*Player, error) {
+	for _, player := range r.Players {
+		if player.ID == ID {
+			return player, nil
+		}
+	}
+
+	return nil, ErrPlayerNotFound
+}
+
 func (r *Room) RemoveAllPlayers() error {
-	r.players = make([]*Player, 0)
+	r.Players = make([]*Player, 0)
 	return nil
 }
 
 func (r *Room) ClearVotes() error {
-	for _, player := range r.players {
+	for _, player := range r.Players {
 		err := player.ClearVote()
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (r *Room) SetStatus(status voting.Status) error {
+	r.Status = status
+	return nil
+}
+
+func (r *Room) UpdateTime() time.Time {
+	return r.updateTime
 }

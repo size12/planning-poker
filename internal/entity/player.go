@@ -17,11 +17,10 @@ func init() {
 }
 
 type Player struct {
-	id          uuid.UUID
-	name        string
-	accessLevel access.Access
-
-	voted *voting.Vote
+	ID          uuid.UUID     `json:"id"`
+	Name        string        `json:"name"`
+	AccessLevel access.Access `json:"access_level"`
+	Voted       *voting.Vote  `json:"voted"`
 }
 
 func NewPlayer() (*Player, error) {
@@ -34,35 +33,23 @@ func NewPlayer() (*Player, error) {
 	name := nameGenerator.Generate()
 
 	return &Player{
-		id:          userID,
-		name:        name,
-		accessLevel: access.User,
+		ID:          userID,
+		Name:        name,
+		AccessLevel: access.User,
 	}, nil
 }
 
-func (p *Player) ID() uuid.UUID {
-	return p.id
-}
-
-func (p *Player) Name() string {
-	return p.name
-}
-
-func (p *Player) AccessLevel() access.Access {
-	return p.accessLevel
-}
-
 func (p *Player) SetAccessLevel(level access.Access) error {
-	p.accessLevel = level
+	p.AccessLevel = level
 	return nil
 }
 
 func (p *Player) Vote(vote *voting.Vote) error {
-	p.voted = vote
+	p.Voted = vote
 	return nil
 }
 
 func (p *Player) ClearVote() error {
-	p.voted = nil
+	p.Voted = nil
 	return nil
 }

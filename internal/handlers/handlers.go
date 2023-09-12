@@ -1,72 +1,47 @@
 package handlers
 
 import (
+	"errors"
+	"fmt"
+	"sync"
+
 	"github.com/google/uuid"
-	"github.com/size12/planning-poker/internal/entity"
-	"github.com/size12/planning-poker/internal/entity/voting"
 	"github.com/size12/planning-poker/internal/service"
 )
 
+var ErrRoomNotFound = errors.New("room with such ID does not exists")
+
 type Handlers struct {
-	pool *service.RoomPool
+	pool *sync.Map
 }
 
-func NewHandlers(pool *service.RoomPool) (*Handlers, error) {
+func NewHandlers() (*Handlers, error) {
+	pool := &sync.Map{}
+
 	return &Handlers{pool: pool}, nil
 }
 
-func (h *Handlers) CreateRoom(name string) (*entity.Room, error) {
-	room, err := entity.NewRoom(name)
+func (h *Handlers) CreateRoom(name string) (*service.Room, error) {
+	room, err := service.NewRoom(name)
 	if err != nil {
 		return nil, err
 	}
 
-	err = h.pool.AddRoom(room)
-	if err != nil {
-		return nil, err
-	}
+	h.pool.Store(room.ID, room)
 
 	return room, nil
 }
 
-func (h *Handlers) GetRoom(id uuid.UUID) (*entity.Room, error) {
-	return h.pool.RoomByID(id)
-}
-
-func (h *Handlers) Vote(roomID, playerID uuid.UUID, vote *voting.Vote) error {
-	room, err := h.pool.RoomByID(roomID)
-	if err != nil {
-		return err
+func (h *Handlers) GetRoom(id uuid.UUID) (*service.Room, error) {
+	value, ok := h.pool.Load(id)
+	if !ok {
+		return nil, ErrRoomNotFound
 	}
 
-	room.UpdateTime()
-
-	player, err := room.PlayerByID(playerID)
-	if err != nil {
-		return err
+	room, ok := value.(*service.Room)
+	if !ok {
+		return nil, fmt.Errorf("failed get *service.Room object from sync.Map")
 	}
 
-	return player.Vote(vote)
-}
-
-func (h *Handlers) Reveal(roomID uuid.UUID) error {
-	room, err := h.pool.RoomByID(roomID)
-	if err != nil {
-		return err
-	}
-
-	room.UpdateTime()
-
-	return room.SetStatus(voting.StatusRevealed)
-}
-
-func (h *Handlers) StartVoting(roomID uuid.UUID) error {
-	room, err := h.pool.RoomByID(roomID)
-	if err != nil {
-		return err
-	}
-
-	room.UpdateTime()
-
-	return room.SetStatus(voting.StatusVoting)
+	return room, nil
 }

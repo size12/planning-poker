@@ -26,11 +26,4 @@ func main() {
 
 	<-c
 	poker.Shutdown()
-
-	//player, err := entity.NewPlayer()
-	//if err != nil {
-	//	log.Fatalln(err)
-	//}
-	//bytes, err := json.MarshalIndent(player, "   ", "   ")
-	//fmt.Println(string(bytes))
 }

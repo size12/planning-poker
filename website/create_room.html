@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <style>
+        body{
+            margin:0;
+            height:100vh; /* use 100% of the height of the viewport */
+            display:grid;
+            place-items: center;
+
+            --stroke-main: #EEEEEE;
+            --main-blue: #3197BC;
+            --bg-white: #FFFFFF;
+            --Color-Black: #262627;
+
+            font-family: Montserrat, monospace;
+        }
+
+        #container {
+            display: flex;
+            width: 600px;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+
+        }
+
+        .title {
+            color: var(--Color-Black, #262627);
+            text-align: center;
+            /* Desktop/H-2 Bold */
+            font-size: 32px;
+            font-style: normal;
+            font-weight: 700;
+            line-height: 120%; /* 38.4px */
+            text-transform: capitalize;
+        }
+
+        .input {
+            border-radius: 8px;
+            border: 1px solid var(--stroke-main, #EEE);
+            background: var(--bg-white, #FFF);
+            width: 422px;
+            padding: 20px;
+            height: 5px;
+        }
+
+        .button {
+            border-radius: 8px;
+            border: 1px solid var(--stroke-main, #EEE);
+            background: var(--main-blue, #3197BC);
+            color: var(--bg-white, #FFF);
+            width: 465px;
+            height: 50px;
+
+            font-weight: 700;
+        }
+
+        .button:hover {
+            transition-duration: 100ms;
+            background: cornflowerblue;
+            border: 3px solid var(--stroke-main, #EEE);
+        }
+    </style>
+
+    <meta charset="UTF-8">
+    <title>Create room</title>
+</head>
+<body>
+    <div id = "container">
+        <div class = "title">
+            Poker Planning for Agile Development Teams
+        </div>
+        <label>
+            <input class="input" placeholder="Enter room name">
+        </label>
+        <button class="button">
+            Create game
+        </button>
+    </div>
+
+    <script>
+        let button = document.querySelector(".button")
+        let field  = document.querySelector("input")
+        button.addEventListener("click", function () {
+            if (field.value === "") {
+                alert("Room name can't be empty!")
+                return
+            }
+
+            let xhr = new XMLHttpRequest();
+
+            xhr.open("POST", '/rooms/create', true);
+
+            let data = JSON.stringify({"name" : field.value})
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    let j = JSON.parse(xhr.responseText)
+                    window.location = "/rooms/" + j["id"]
+                }
+            }
+
+            xhr.send(data);
+        })
+    </script>
+</body>
+</html>

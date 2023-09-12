@@ -1,15 +1,27 @@
 package config
 
-import "time"
+import (
+	"log"
+
+	"github.com/caarlos0/env/v9"
+)
 
 type Config struct {
-	RunAddress      string
-	InactiveTimeout time.Duration
+	RunAddress string `env:"RUN_ADDRESS"`
+	BaseURL    string `env:"BASE_URL"`
 }
 
 func GetConfig() *Config {
-	return &Config{
+	cfg := &Config{
 		":8080",
-		15 * time.Minute,
+		"127.0.0.1:8080",
 	}
+
+	err := env.Parse(cfg)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	return cfg
+
 }

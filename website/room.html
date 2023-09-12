@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Poker</title>
+
+  <style>
+    body{
+      --stroke-main: #EEEEEE;
+      --main-blue: #3197BC;
+      --bg-white: #FFFFFF;
+      --Color-Black: #262627;
+
+      font-family: Montserrat, monospace;
+    }
+
+    #container {
+      display: flex;
+      width: 100vw;
+      flex-direction: column;
+      gap: 20px;
+      justify-content: flex-start;
+    }
+
+    .title {
+      color: var(--Color-Black, #262627);
+      text-align: center;
+      /* Desktop/H-2 Bold */
+      font-size: 32px;
+      font-style: normal;
+      font-weight: 700;
+      line-height: 120%; /* 38.4px */
+      text-transform: capitalize;
+    }
+
+    .input {
+      border-radius: 8px;
+      border: 1px solid var(--stroke-main, #EEE);
+      background: var(--bg-white, #FFF);
+      width: 422px;
+      padding: 20px;
+      height: 5px;
+    }
+
+    .button {
+      border-radius: 8px;
+      border: 1px solid var(--stroke-main, #EEE);
+      background: var(--main-blue, #3197BC);
+      color: var(--bg-white, #FFF);
+      width: 300px;
+      height: 50px;
+
+      font-weight: 700;
+    }
+
+    .button:hover {
+      transition-duration: 100ms;
+      background: cornflowerblue;
+      border: 3px solid var(--stroke-main, #EEE);
+    }
+
+    #header {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      margin: 20px;
+    }
+
+    #buttons {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      margin: 20px;
+    }
+
+    .vote_button {
+      width: 50px;
+      height: 80px;
+      border: none;
+      background: gray;
+      color: white;
+      font-weight: bolder;
+    }
+
+    #buttons > .vote_button {
+      background: #3197BC;
+    }
+
+    #buttons > .vote_button.voted {
+      background: #4dff24;
+    }
+
+    #buttons > .vote_button:hover:not(.voted) {
+      transition-duration: 100ms;
+      background: cornflowerblue;
+      border: 3px solid var(--stroke-main, #EEE);
+    }
+
+    #votes {
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .player_vote > .voted {
+      background: cornflowerblue;
+    }
+
+
+    .player_vote {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+  </style>
+
+</head>
+<body>
+
+<div id = "container">
+  <div id = "header">
+    <div id = "status" class="title">VOTING</div>
+    {{if .IsAdmin}}
+    <button class="button" id = "reveal_button">REVEAL</button>
+    {{end}}
+  </div>
+
+  <div id = "buttons">
+    <button value="ZERO" class="vote_button">0</button>
+    <button value="ONE_HALF" class="vote_button">0.5</button>
+    <button value="ONE" class="vote_button">1</button>
+    <button value="TWO" class="vote_button">2</button>
+    <button value="THREE" class="vote_button">3</button>
+    <button value="FIVE" class="vote_button">5</button>
+    <button value="EIGHT" class="vote_button">8</button>
+    <button value="THIRTEEN" class="vote_button">13</button>
+    <button value="TWENTY_ONE" class="vote_button">21</button>
+    <button value="THIRTY_FOUR" class="vote_button">34</button>
+    <button value="QUESTION" class="vote_button">?</button>
+    <button value="COFFEE" class="vote_button">☕️</button>
+  </div>
+
+  <div id = "votes">
+
+  </div>
+
+</div>
+
+<script type="text/javascript">
+  ws_url = "ws://{{.Url}}/ws/{{.RoomID}}"
+
+  player_id = "{{.PlayerID}}"
+
+  let last_status = "STATUS: VOTING"
+  let status_element = document.querySelector("#status")
+  let reveal = document.querySelector("#reveal_button")
+
+  let vote_types = {
+    "ZERO" : "0",
+    "ONE_HALF" : "0.5",
+    "ONE" : "1",
+    "TWO" : "2",
+    "THREE" : "3",
+    "FIVE" : "5",
+    "EIGHT" : "8",
+    "THIRTEEN" : "13",
+    "TWENTY_ONE" : "21",
+    "THIRTY_FOUR" : "34",
+    "QUESTION" : "?",
+    "COFFEE" : "☕"
+  }
+
+  socket = new WebSocket(ws_url)
+
+  socket.onopen = function() {
+    let s = JSON.stringify({
+      "type": "CONNECTED",
+      "player_id": player_id
+    })
+    console.log(s)
+    socket.send(s)
+  };
+
+  let votes = document.querySelector("#votes")
+
+  socket.onmessage = function(event) {
+    let data = JSON.parse(event.data)
+
+    if (data["type"] === "ALREADY_CONNECTED") {
+      alert("Please return for the first tab!")
+      document.body.innerHTML = "<div class='title'>Please return for the first tab!</div>"
+      return
+    }
+
+    votes.innerHTML = ""
+
+    let status = data["status"]
+
+    if (last_status !== status) {
+      last_status = status
+      if (status === "VOTING") {
+        status_element.textContent = "STATUS: VOTING"
+        {{if .IsAdmin}}
+        reveal.textContent = "REVEAL"
+        {{end}}
+        vote_buttons.forEach(function (button) {
+          button.className = "vote_button"
+        })
+      } else {
+        status_element.textContent = "STATUS: REVEAL"
+        {{if .IsAdmin}}
+        reveal.textContent = "NEW VOTING"
+        {{end}}
+      }
+    }
+
+
+
+    try {
+      data["players"].forEach(function (player) {
+        let player_name = player["name"]
+        let player_vote = player["voted"]
+        let add_class = player["voted"] ? " voted" : ""
+
+        let user_vote = "<div class = \"player_vote\">\n" +
+                `      <button class = \"vote_button${add_class}\">${player_vote && status === "REVEALED" ? vote_types[player_vote] : ""}</button>\n` +
+                `      <div class = \"name\">${player_name}</div>\n` +
+                "    </div>"
+
+        votes.innerHTML += user_vote
+      })
+    } catch (err) {console.log(err)}
+
+  };
+
+  socket.onerror = function(error) {
+    console.log("Ошибка " + error.message);
+  };
+
+
+  buttons = document.querySelector("#buttons")
+
+  vote_buttons = buttons.querySelectorAll(".vote_button")
+  vote_buttons.forEach(function (button) {
+    button.addEventListener("click", function (event) {
+      vote_buttons.forEach(function (button) {
+        button.className = "vote_button"
+      })
+
+      if (last_status !== "VOTING") {
+        return
+      }
+
+      button.classList.add("voted")
+
+      let s = JSON.stringify({
+        "type" : "VOTE",
+        "player_id" : player_id,
+        "vote" : button.value
+      })
+      socket.send(s)
+    })
+  })
+
+  {{if .IsAdmin}}
+  reveal.addEventListener("click", function () {
+    if (last_status === "VOTING") {
+      socket.send(JSON.stringify({"player_id" : player_id, "type" : "REVEAL"}))
+      reveal.textContent = "NEW VOTING"
+      status_element.textContent = "STATUS: REVEAL"
+
+    } else {
+      socket.send(JSON.stringify({"player_id" : player_id, "type" : "NEW_VOTING"}))
+      reveal.textContent = "REVEAL"
+      status_element.textContent = "STATUS: VOTING"
+      vote_buttons.forEach(function (button) {
+        button.className = "vote_button"
+      })
+    }
+  })
+  {{end}}
+
+</script>
+
+</body>
+</html>

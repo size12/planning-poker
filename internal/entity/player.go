@@ -23,30 +23,22 @@ type Player struct {
 	Voted       *voting.Vote  `json:"voted"`
 }
 
-func NewPlayer() (*Player, error) {
-	userID, err := uuid.NewUUID()
-
-	if err != nil {
-		return nil, err
-	}
-
+func NewPlayer(id uuid.UUID) (*Player, error) {
 	name := nameGenerator.Generate()
 
 	return &Player{
-		ID:          userID,
+		ID:          id,
 		Name:        name,
 		AccessLevel: access.User,
 	}, nil
 }
 
-func (p *Player) SetAccessLevel(level access.Access) error {
+func (p *Player) SetAccessLevel(level access.Access) {
 	p.AccessLevel = level
-	return nil
 }
 
-func (p *Player) Vote(vote *voting.Vote) error {
+func (p *Player) Vote(vote *voting.Vote) {
 	p.Voted = vote
-	return nil
 }
 
 func (p *Player) ClearVote() error {

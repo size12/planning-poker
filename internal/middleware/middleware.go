@@ -23,30 +23,17 @@ func generateCookie() (*http.Cookie, error) {
 	return cookie, nil
 }
 
-//func Room(next http.Handler) http.Handler {
-//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//		id, err := uuid.Parse(chi.URLParam(r, "id"))
-//		if err != nil {
-//			http.Error(w, "failed read room id from url", http.StatusBadRequest)
-//			return
-//		}
-//
-//		ctx := context.WithValue(r.Context(), "room_id", id)
-//		next.ServeHTTP(w, r.WithContext(ctx))
-//	})
-//}
-
 func Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("poker_player_id")
 		if err != nil {
 			cookie, err = generateCookie()
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				log.Printf("Failed generate cookie: %v\n", err)
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 			http.SetCookie(w, cookie)
-			log.Printf("set new cookie %v\n", cookie)
 		}
 
 		id, err := uuid.Parse(cookie.Value)
@@ -55,15 +42,16 @@ func Auth(next http.Handler) http.Handler {
 			log.Printf("Failed parse user cookie: %v\n", err)
 			cookie, err = generateCookie()
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				log.Printf("Failed generate cookie: %v\n", err)
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 			http.SetCookie(w, cookie)
-			log.Printf("set new cookie %v\n", cookie)
 
 			id, err = uuid.Parse(cookie.Value)
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				log.Printf("Failed parse just setted cookie: %v\n", err)
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 		}

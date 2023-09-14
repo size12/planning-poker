@@ -5,7 +5,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/goombaio/namegenerator"
-	"github.com/size12/planning-poker/internal/entity/access"
 	"github.com/size12/planning-poker/internal/entity/voting"
 )
 
@@ -17,24 +16,18 @@ func init() {
 }
 
 type Player struct {
-	ID          uuid.UUID     `json:"id"`
-	Name        string        `json:"name"`
-	AccessLevel access.Access `json:"access_level"`
-	Voted       *voting.Vote  `json:"voted"`
+	ID    uuid.UUID    `json:"id"`
+	Name  string       `json:"name"`
+	Voted *voting.Vote `json:"voted"`
 }
 
 func NewPlayer(id uuid.UUID) (*Player, error) {
 	name := nameGenerator.Generate()
 
 	return &Player{
-		ID:          id,
-		Name:        name,
-		AccessLevel: access.User,
+		ID:   id,
+		Name: name,
 	}, nil
-}
-
-func (p *Player) SetAccessLevel(level access.Access) {
-	p.AccessLevel = level
 }
 
 func (p *Player) Vote(vote *voting.Vote) {

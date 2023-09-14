@@ -10,11 +10,9 @@ type Type string
 const (
 	Connected Type = "CONNECTED"
 
-	Vote           Type = "VOTE"
-	Reveal         Type = "REVEAL"
-	StartNewVoting Type = "NEW_VOTING"
+	Vote Type = "VOTE"
 
-	AlreadyConnected Type = "ALREADY_CONNECTED"
+	ChangeStatus Type = "CHANGE_STATUS"
 )
 
 type Update struct {

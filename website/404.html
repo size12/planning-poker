@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <style>
+        body{
+            height:100vh; /* use 100% of the height of the viewport */
+            width: 100vw;
+            place-items: center;
+
+            --stroke-main: #EEEEEE;
+            --main-blue: #3197BC;
+            --bg-white: #FFFFFF;
+            --Color-Black: #262627;
+
+            display: grid;
+            align-content: center;
+
+
+            font-family: Montserrat, monospace;
+        }
+
+        #container {
+            width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: auto;
+            border: 2px solid;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .title {
+            color: var(--Color-Black, #262627);
+            text-align: center;
+            font: inherit;
+            font-size: 32px;
+            font-style: normal;
+            font-weight: 700;
+            line-height: 120%;
+            text-transform: capitalize;
+        }
+
+        .button {
+            border-radius: 8px;
+            border: 1px solid var(--stroke-main, #EEE);
+            background: var(--main-blue, #3197BC);
+            color: var(--bg-white, #FFF);
+            height: 50px;
+            font: inherit;
+
+            font-weight: 700;
+            width: 300px;
+        }
+
+        .button:hover {
+            transition-duration: 100ms;
+            background: cornflowerblue;
+        }
+    </style>
+
+    <meta charset="UTF-8">
+    <title>404</title>
+</head>
+<body>
+<div id = "container">
+    <div class = "title">
+        404. Room not found :(
+    </div>
+    <button class="button" onclick="location.href='/rooms/create'">
+        Return to main
+    </button>
+</div>
+</body>
+</html>

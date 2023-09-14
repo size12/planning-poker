@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Room name</title>
+
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-items: flex-start;
+
+        width: 90vw;
+        margin: auto;
+
+        font-family: Montserrat, monospace;
+        font-size: 20px;
+        font-weight:bold;
+        text-decoration:none;
+      }
+
+      #vote_cards {
+        display: inline-grid;
+        grid-gap: 10px;
+        grid-template-columns: repeat(auto-fit, 60px);
+        padding: 20px;
+        justify-content: center;
+      }
+
+      button {
+        border: 1px;
+        border-radius: 8px;
+        display: inline-block;
+        cursor: pointer;
+        text-shadow:0 1px 0 #3d768a;
+        transition: transform 0.2s, ease-out;
+        padding: 0;
+        font: inherit;
+      }
+
+      #vote_cards > .card {
+        box-shadow: 0 10px 14px -7px #276873;
+        background: #599bb3 linear-gradient(to bottom, #599bb3 5%, #408c99 100%);
+        color: #ffffff;
+        width: 60px;
+        height: 96px;
+      }
+
+      #vote_cards > .card:not(:hover) {
+        transition: transform 0.2s ease-out;
+      }
+
+      #vote_cards > .card:hover:not(.inactive) {
+        transform: translateY(-30px);
+        transition: transform 0.4s ease-out;
+      }
+
+      #vote_cards > .card.active {
+        background: #76d559 linear-gradient(to bottom, #7cbb30 5%, #8ad37d 100%);
+        transform: translateY(-30px);
+      }
+
+      h1 {
+        font: inherit;
+        font-size: 30px;
+        border: 1px black solid;
+        padding: 20px;
+        width: 200px;
+      }
+
+      header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      #change_status {
+        box-shadow: 0 10px 14px -7px #276873;
+        background: #599bb3 linear-gradient(to bottom, #599bb3 5%, #408c99 100%);
+        color: #ffffff;
+        width: 180px;
+        height: 60px;
+      }
+
+      #change_status:hover:not(.inactive) {
+        box-shadow: 0 20px 14px -7px #276873;
+        transition: all 0.2s ease-out;
+      }
+
+      #change_status:not(:hover) {
+        transition: all 0.2s ease-out;
+      }
+
+      #table {
+        width: auto;
+
+        display: inline-grid;
+        grid-gap: 50px;
+        grid-template-columns: repeat(auto-fit, 60px);
+        padding: 20px;
+        justify-content: center;
+      }
+
+      .player {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 10px;
+        gap: 5px;
+      }
+
+      .player > .card {
+        background: gray;
+        color: #ffffff;
+        width: 60px;
+        border: 2px solid #2e367a;
+        height: 96px;
+        pointer-events: none;
+      }
+
+      .player > .card.active {
+        background: mediumseagreen;
+        color: #ffffff;
+        width: 60px;
+        border: 2px solid #2e367a;
+        height: 96px;
+      }
+
+      #result {
+        border: none;
+      }
+
+    </style>
+
+</head>
+<body>
+  <header>
+    <h1 id="status">Waiting</h1>
+    <h1 id="result">AVG: NONE</h1>
+    <button id="change_status">Start new voting</button>
+  </header>
+
+  <div id="table">
+
+  </div>
+
+  <div id="vote_cards">
+
+    <button value="ZERO" class="card inactive">0</button>
+    <button value="ONE_HALF" class="card inactive">0.5</button>
+    <button value="ONE" class="card inactive">1</button>
+    <button value="TWO" class="card inactive">2</button>
+    <button value="THREE" class="card inactive">3</button>
+    <button value="FIVE" class="card inactive">5</button>
+    <button value="EIGHT" class="card inactive">8</button>
+    <button value="THIRTEEN" class="card inactive">13</button>
+    <button value="TWENTY_ONE" class="card inactive">21</button>
+    <button value="THIRTY_FOUR" class="card inactive">34</button>
+    <button value="QUESTION" class="card inactive">?</button>
+    <button value="COFFEE" class="card inactive">☕️</button>
+
+  </div>
+
+  <script>
+    let vote_values = {
+      "ZERO" : "0",
+      "ONE_HALF" : "0.5",
+      "ONE" : "1",
+      "TWO" : "2",
+      "THREE" : "3",
+      "FIVE" : "5",
+      "EIGHT" : "8",
+      "THIRTEEN" : "13",
+      "TWENTY_ONE" : "21",
+      "THIRTY_FOUR" : "34",
+      "QUESTION" : "?",
+      "COFFEE" : "☕"
+    }
+
+    // for change status button.
+    let next_status_values = {
+      "WAITING" : "Start voting",
+      "VOTING" : "Reveal votes",
+      "REVEALED" : "New voting"
+    }
+
+    let player_html = "<div class=\"player\"><button class=\"card{1}\">{2}</button><div class=\"name\">{0}</div></div>"
+
+    function getCookie(c_name) {
+
+      if (document.cookie.length > 0) {
+        let c_start = document.cookie.indexOf(c_name + "=");
+        if (c_start !== -1) {
+          c_start = c_start + c_name.length + 1;
+          let c_end = document.cookie.indexOf(";", c_start);
+          if (c_end === -1) {
+            c_end = document.cookie.length;
+          }
+          return document.cookie.substring(c_start, c_end);
+        }
+      }
+      return "";
+    }
+
+    let result = document.querySelector("#result")
+
+    function printAvgVote(players) {
+      let cnt = 0
+      let total = 0
+
+      players.forEach(function (player) {
+        let vote = vote_values[player["voted"]]
+        let f = parseFloat(vote)
+        if (isNaN(f)){
+          return
+        }
+        total += f
+        cnt += 1
+      })
+
+      result.textContent = "AVG: " + ((cnt > 0) ? (total / cnt).toFixed(2) : "0");
+    }
+
+    url = new URL(window.location.href)
+    ws_url = "ws://" + url.host + "/ws/" + url.pathname.split("/").pop()
+
+    let player_cookie = getCookie("poker_player_id")
+    let player_id = ""
+    let access = ""
+    let current_status = ""
+
+    let change_status_btn = document.querySelector("#change_status")
+    let vote_buttons = document.querySelector("#vote_cards").querySelectorAll(".card")
+    let status = document.querySelector("#status")
+
+    let poker_table = document.querySelector("#table")
+
+    socket = new WebSocket(ws_url)
+
+    socket.onmessage = function (message) {
+      let data = JSON.parse(message.data)
+      console.log(data)
+
+      if (player_id === "") {
+        let splited = data["message"].split(":")
+        player_id = splited[1]
+        access = splited[0]
+        if (access !== "ADMIN") {
+          change_status_btn.parentNode.removeChild(change_status_btn);
+        }
+
+        socket.send(JSON.stringify({
+          "type": "CONNECTED",
+          "player_id": player_id
+        }))
+
+        return
+      }
+
+      if (data.hasOwnProperty('code')) {
+        console.log(data)
+        return;
+      }
+
+      if (data["status"] !== current_status) {
+        current_status = data["status"]
+        status.textContent = current_status
+        change_status_btn.textContent = next_status_values[current_status]
+        switch (current_status) {
+          case "VOTING": {
+            vote_buttons.forEach(function (button) {
+              button.className = "card"
+            })
+            break;
+          }
+          case "REVEALED": {
+            printAvgVote(data["players"]);
+          }
+        }
+      }
+
+
+      document.title = data["name"]
+
+      poker_table.innerHTML = ""
+      data["players"].forEach(function (player) {
+        let formatted = player_html.replace("{0}", player["name"].replace("-", "\n"))
+                .replace("{1}", (player["voted"] !== null) ? " active" : "")
+                .replace("{2}", (current_status === "REVEALED" && player["voted"] !== null) ? vote_values[player["voted"]] : "")
+
+        poker_table.innerHTML += formatted
+      })
+    }
+
+    change_status_btn.addEventListener("click", function () {
+      if (access !== "ADMIN") {
+        alert("You can't press this button!")
+        return
+      }
+
+      socket.send(JSON.stringify(
+              {
+                "type" : "CHANGE_STATUS",
+                "player_id" : player_cookie,
+              }
+      ))
+    })
+
+
+    vote_buttons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        vote_buttons.forEach(function (button) {
+          button.className = "card"
+        })
+
+        if (current_status !== "VOTING") {
+          return
+        }
+
+        let value = button.value
+        button.classList.add("active")
+
+        socket.send(JSON.stringify({
+          "type" : "VOTE",
+          "player_id" : player_id,
+          "vote" : value
+        }))
+      })
+    })
+
+  </script>
+
+</body>
+</html>

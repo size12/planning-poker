@@ -10,12 +10,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/olahol/melody"
 	"github.com/size12/planning-poker/internal/app/websocket"
-	"github.com/size12/planning-poker/internal/service/room"
 )
 
 // CreateRoom is handler for POST /rooms/create.
 func (app *App) CreateRoom(writer http.ResponseWriter, request *http.Request) {
-	r := &room.Room{}
+	req := struct {
+		Name    string `json:"name"`
+		Buttons string `json:"buttons"`
+	}{}
 
 	body, err := io.ReadAll(request.Body)
 	if err != nil {
@@ -25,13 +27,13 @@ func (app *App) CreateRoom(writer http.ResponseWriter, request *http.Request) {
 	}
 	defer request.Body.Close()
 
-	err = json.Unmarshal(body, r)
+	err = json.Unmarshal(body, &req)
 	if err != nil {
 		http.Error(writer, "can't unmarshal request body", http.StatusBadRequest)
 		return
 	}
 
-	r, err = app.handlers.CreateRoom(r.Name)
+	r, err := app.handlers.CreateRoom(req.Name, req.Buttons)
 	if err != nil {
 		http.Error(writer, fmt.Sprintf("can't create request: %v", err), http.StatusBadRequest)
 		return

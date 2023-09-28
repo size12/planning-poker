@@ -37,10 +37,37 @@ func (r *Room) NextStatus(ID uuid.UUID) error {
 		return err
 	}
 
+	if r.Status == voting.RoomStatusRevealed {
+		r.CalculateScore()
+		err := r.SaveToHistory()
+		if err != nil {
+			return err
+		}
+	}
+
 	if r.Status == voting.RoomStatusVoting {
 		if err := r.ClearVotes(ID); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (r *Room) NextPlayerStatus(ID uuid.UUID) error {
+	player, err := r.PlayerByID(ID)
+
+	if err != nil {
+		return err
+	}
+
+	switch player.Status {
+	case voting.PlayerVoting:
+		player.SetVotingStatus(voting.PlayerObserving)
+	case voting.PlayerObserving:
+		player.SetVotingStatus(voting.PlayerVoting)
+	default:
+		return fmt.Errorf("unknown voting status %v", player.Status)
 	}
 
 	return nil

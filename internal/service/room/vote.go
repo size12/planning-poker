@@ -5,7 +5,7 @@ import (
 	"github.com/size12/planning-poker/internal/entity/voting"
 )
 
-func (r *Room) Vote(playerID uuid.UUID, vote *voting.Vote) error {
+func (r *Room) Vote(playerID uuid.UUID, vote *voting.VoteButton) error {
 	r.Lock()
 	defer r.Unlock()
 
@@ -41,7 +41,7 @@ func (r *Room) CountVotes() int {
 	cnt := 0
 
 	for _, player := range r.Players {
-		if player.Voted != nil {
+		if player.Voted != nil || player.Status == voting.PlayerObserving {
 			cnt += 1
 		}
 	}

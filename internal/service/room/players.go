@@ -38,3 +38,16 @@ func (r *Room) PlayerByID(ID uuid.UUID) (*entity.Player, error) {
 
 	return nil, ErrPlayerNotFound
 }
+
+func (r *Room) ChangePlayerName(ID uuid.UUID, name string) error {
+	r.RLock()
+	defer r.RUnlock()
+
+	for _, player := range r.Players {
+		if player.ID == ID {
+			return player.SetName(name)
+		}
+	}
+
+	return ErrPlayerNotFound
+}

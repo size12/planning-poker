@@ -1,18 +1,16 @@
 package voting
 
-type Vote string
+import "fmt"
 
-const (
-	Zero       Vote = "ZERO"
-	OneHalf    Vote = "ONE_HALF"
-	One        Vote = "ONE"
-	Two        Vote = "TWO"
-	Three      Vote = "THREE"
-	Five       Vote = "FIVE"
-	Eight      Vote = "EIGHT"
-	Thirteen   Vote = "THIRTEEN"
-	TwentyOne  Vote = "TWENTY_ONE"
-	ThirtyFour Vote = "THIRTY_FOUR"
-	Question   Vote = "QUESTION"
-	Coffee     Vote = "COFFEE"
-)
+type VoteButton struct {
+	Name  string  `json:"name"`
+	Value float64 `json:"value"`
+}
+
+type VotePack struct {
+	Votes []VoteButton `json:"votes"`
+}
+
+func (v *VoteButton) String() string {
+	return fmt.Sprintf("%s:%.1f", v.Name, v.Value)
+}

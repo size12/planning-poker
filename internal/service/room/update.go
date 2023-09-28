@@ -52,6 +52,30 @@ func (r *Room) Update(u *update.Update) error {
 			log.Printf("Failed start new voting in room %s: %v\n", r.ID, err)
 			return err
 		}
+
+	case update.ChangePlayerStatus:
+		err := r.NextPlayerStatus(u.PlayerID)
+		if err != nil {
+			log.Printf("Failed start change voting type in room %s: %v\n", r.ID, err)
+			return err
+		}
+
+		if r.CountVotes() == r.Size() {
+			err = r.NextStatus(r.adminID)
+			if err != nil {
+				return err
+			}
+			log.Printf("All players in room %s voted, revealing\n", r.ID)
+		}
+	case update.ChangePlayerName:
+		err := r.ChangePlayerName(u.PlayerID, u.Message)
+		if err != nil {
+			log.Printf("Failed change player %v name in room %v: %v\n", r.ID, u.PlayerID, err)
+			return err
+		}
+
+		return nil
 	}
+
 	return nil
 }

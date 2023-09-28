@@ -68,6 +68,8 @@
             padding: 20px;
             height: 5px;
         }
+
+
     </style>
 
     <meta charset="UTF-8">
@@ -81,6 +83,11 @@
         <label>
             <input class="input" placeholder="Enter room name">
         </label>
+        <div id="packs-container">
+            <input type="radio" name="type" value = "MODIFIED_FIBO" checked>Modified Fibo</input>
+            <input type="radio" name="type" value = "T_SHIRT">T-Shirt</input>
+            <input type="radio" name="type" value = "SEQUENCE">Sequence</input>
+        </div>
         <button class="button">
             Create game
         </button>
@@ -89,17 +96,20 @@
     <script>
         let button = document.querySelector(".button")
         let field  = document.querySelector("input")
+
         button.addEventListener("click", function () {
             if (field.value === "") {
                 alert("Room name can't be empty!")
                 return
             }
 
+            let type = document.querySelector('input[name="type"]:checked').value;
+
             let xhr = new XMLHttpRequest();
 
             xhr.open("POST", '/rooms/create', true);
 
-            let data = JSON.stringify({"name" : field.value})
+            let data = JSON.stringify({"name" : field.value, "buttons" : type})
 
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === XMLHttpRequest.DONE) {

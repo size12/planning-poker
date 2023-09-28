@@ -276,7 +276,6 @@
       }
 
       if (data.hasOwnProperty('code')) {
-        console.log(data)
         return;
       }
 
@@ -304,8 +303,6 @@
 
             let value = button.value
             button.classList.add("active")
-
-            console.log("Clicked on but", value, button.textContent)
 
             socket.send(JSON.stringify({
               "type" : "VOTE",
@@ -349,7 +346,6 @@
       poker_table.innerHTML = ""
       data["players"].forEach(function (player) {
         if (player["id"] === player_id) {
-          console.log(player["status"])
           player_voting_status.textContent = "Player: " + player_status_values[player["status"]]
           current_player_voting_type = player["status"]
         }

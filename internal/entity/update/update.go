@@ -12,7 +12,8 @@ const (
 
 	Vote Type = "VOTE"
 
-	ChangeStatus Type = "CHANGE_STATUS"
+	ChangeStatus       Type = "CHANGE_STATUS"
+	ChangePlayerStatus Type = "CHANGE_PLAYER_STATUS"
 )
 
 type Update struct {

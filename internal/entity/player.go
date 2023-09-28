@@ -16,18 +16,24 @@ func init() {
 }
 
 type Player struct {
-	ID    uuid.UUID    `json:"id"`
-	Name  string       `json:"name"`
-	Voted *voting.Vote `json:"voted"`
+	ID     uuid.UUID     `json:"id"`
+	Name   string        `json:"name"`
+	Voted  *voting.Vote  `json:"voted"`
+	Status voting.Status `json:"status"`
 }
 
 func NewPlayer(id uuid.UUID) (*Player, error) {
 	name := nameGenerator.Generate()
 
 	return &Player{
-		ID:   id,
-		Name: name,
+		ID:     id,
+		Name:   name,
+		Status: voting.PlayerObserving,
 	}, nil
+}
+
+func (p *Player) SetVotingStatus(status voting.Status) {
+	p.Status = status
 }
 
 func (p *Player) Vote(vote *voting.Vote) {

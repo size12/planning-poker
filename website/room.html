@@ -132,6 +132,25 @@
         border: none;
       }
 
+      #voting-status-container {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      #change-voting-status {
+        padding: 20px;
+        box-shadow: 0 10px 14px -7px #276873;
+        background: #599bb3 linear-gradient(to bottom, #599bb3 5%, #408c99 100%);
+        color: #ffffff;
+        height: auto;
+        width: auto;
+      }
+
+      #voting-status {
+        width: auto;
+      }
+
+
     </style>
 
 </head>
@@ -141,6 +160,11 @@
     <h1 id="result">AVG: NONE</h1>
     <button id="change_status">Start new voting</button>
   </header>
+
+  <div id="voting-status-container">
+    <h1 id="voting-status">Status: OBSERVING</h1>
+    <button id="change-voting-status">Change voting status</button>
+  </div>
 
   <div id="table">
 
@@ -184,6 +208,11 @@
       "WAITING" : "Start voting",
       "VOTING" : "Reveal votes",
       "REVEALED" : "New voting"
+    }
+
+    let player_status_values = {
+      "PLAYER_VOTING" : "VOTING",
+      "PLAYER_OBSERVING" : "OBSERVING",
     }
 
     let player_html = "<div class=\"player\"><button class=\"card{1}\">{2}</button><div class=\"name\">{0}</div></div>"
@@ -237,6 +266,11 @@
 
     let poker_table = document.querySelector("#table")
 
+    let change_voting_status = document.querySelector("#change-voting-status")
+    let player_voting_status = document.querySelector("#voting-status")
+
+    let current_player_voting_type = "PLAYER_OBSERVING"
+
     socket = new WebSocket(ws_url)
 
     socket.onmessage = function (message) {
@@ -286,9 +320,15 @@
 
       poker_table.innerHTML = ""
       data["players"].forEach(function (player) {
+        if (player["id"] === player_id) {
+          console.log(player["status"])
+          player_voting_status.textContent = "Status: " + player_status_values[player["status"]]
+          current_player_voting_type = player["status"]
+        }
+
         let formatted = player_html.replace("{0}", player["name"].replace("-", "\n"))
                 .replace("{1}", (player["voted"] !== null) ? " active" : "")
-                .replace("{2}", (current_status === "REVEALED" && player["voted"] !== null) ? vote_values[player["voted"]] : "")
+                .replace("{2}", player["status"] === "PLAYER_OBSERVING" ? "👀" : (current_status === "REVEALED" && player["voted"] !== null) ? vote_values[player["voted"]] : "")
 
         poker_table.innerHTML += formatted
       })
@@ -303,7 +343,16 @@
       socket.send(JSON.stringify(
               {
                 "type" : "CHANGE_STATUS",
-                "player_id" : player_cookie,
+                "player_id" : player_cookie
+              }
+      ))
+    })
+
+    change_voting_status.addEventListener("click", function () {
+      socket.send(JSON.stringify(
+              {
+                "type" : "CHANGE_PLAYER_STATUS",
+                "player_id" : player_id,
               }
       ))
     })
@@ -314,6 +363,11 @@
         vote_buttons.forEach(function (button) {
           button.className = "card"
         })
+
+        if (current_player_voting_type === "PLAYER_OBSERVING") {
+          alert("You can't vote. Please change your status to voting.")
+          return
+        }
 
         if (current_status !== "VOTING") {
           return

@@ -5,7 +5,7 @@ import (
 	"github.com/size12/planning-poker/internal/entity/voting"
 )
 
-func (r *Room) Vote(playerID uuid.UUID, vote *voting.Vote) error {
+func (r *Room) Vote(playerID uuid.UUID, vote *voting.VoteButton) error {
 	r.Lock()
 	defer r.Unlock()
 

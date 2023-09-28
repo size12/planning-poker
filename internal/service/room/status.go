@@ -37,6 +37,14 @@ func (r *Room) NextStatus(ID uuid.UUID) error {
 		return err
 	}
 
+	if r.Status == voting.RoomStatusRevealed {
+		r.CalculateScore()
+		err := r.SaveToHistory()
+		if err != nil {
+			return err
+		}
+	}
+
 	if r.Status == voting.RoomStatusVoting {
 		if err := r.ClearVotes(ID); err != nil {
 			return err

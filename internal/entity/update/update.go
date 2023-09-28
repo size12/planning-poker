@@ -18,8 +18,8 @@ const (
 )
 
 type Update struct {
-	Type     Type         `json:"type"`
-	PlayerID uuid.UUID    `json:"player_id"`
-	Vote     *voting.Vote `json:"vote"`
-	Message  string       `json:"message"`
+	Type     Type               `json:"type"`
+	PlayerID uuid.UUID          `json:"player_id"`
+	Vote     *voting.VoteButton `json:"vote"`
+	Message  string             `json:"message"`
 }

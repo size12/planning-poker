@@ -14,6 +14,9 @@ type Room struct {
 
 	Players []*entity.Player `json:"players"`
 	Status  voting.Status    `json:"status"`
+	History []entity.Score   `json:"history"`
+	Buttons voting.VotePack  `json:"buttons"`
+	Score   string           `json:"score"`
 
 	adminID uuid.UUID
 
@@ -30,6 +33,8 @@ func New(name string) (*Room, error) {
 		return nil, err
 	}
 
+	hist := make([]entity.Score, 0, 5)
+
 	players := make([]*entity.Player, 0, 5)
 	return &Room{
 		ID:      id,
@@ -37,6 +42,7 @@ func New(name string) (*Room, error) {
 		Players: players,
 		Status:  voting.RoomStatusWaiting,
 		RWMutex: &sync.RWMutex{},
+		History: hist,
 	}, nil
 }
 

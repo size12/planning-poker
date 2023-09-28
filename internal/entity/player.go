@@ -16,10 +16,10 @@ func init() {
 }
 
 type Player struct {
-	ID     uuid.UUID     `json:"id"`
-	Name   string        `json:"name"`
-	Voted  *voting.Vote  `json:"voted"`
-	Status voting.Status `json:"status"`
+	ID     uuid.UUID          `json:"id"`
+	Name   string             `json:"name"`
+	Voted  *voting.VoteButton `json:"voted"`
+	Status voting.Status      `json:"status"`
 }
 
 func NewPlayer(id uuid.UUID) (*Player, error) {
@@ -36,7 +36,7 @@ func (p *Player) SetVotingStatus(status voting.Status) {
 	p.Status = status
 }
 
-func (p *Player) Vote(vote *voting.Vote) {
+func (p *Player) Vote(vote *voting.VoteButton) {
 	p.Voted = vote
 }
 

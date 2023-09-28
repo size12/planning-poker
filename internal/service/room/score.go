@@ -1,8 +1,10 @@
 package room
 
-import "fmt"
+import (
+	"math"
+)
 
-func (r *Room) CalculateScore() string {
+func (r *Room) CalculateScore() {
 	r.Lock()
 	defer r.Unlock()
 
@@ -17,11 +19,24 @@ func (r *Room) CalculateScore() string {
 	}
 
 	if cnt == 0 {
-		r.Score = "-"
-		return r.Score
+		r.Score = "?"
+		return
 	}
 
-	r.Score = fmt.Sprintf("%.1f", score/float64(cnt))
+	r.Score = r.findCardByScore(score / float64(cnt))
+}
 
-	return r.Score
+func (r *Room) findCardByScore(score float64) string {
+	result := "?"
+	diff := math.Inf(1)
+
+	for _, card := range r.Buttons.Votes {
+
+		if math.Abs(card.Value-score) < diff {
+			diff = math.Abs(card.Value - score)
+			result = card.Name
+		}
+	}
+
+	return result
 }

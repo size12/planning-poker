@@ -135,6 +135,7 @@
       #voting-status-container {
         display: flex;
         justify-content: space-between;
+        align-items: center;
       }
 
       #change-voting-status {
@@ -150,6 +151,14 @@
         width: auto;
       }
 
+      #chose-name {
+        padding: 10px;
+      }
+
+      #name-input {
+        height: 30px;
+      }
+
 
     </style>
 
@@ -163,6 +172,10 @@
 
   <div id="voting-status-container">
     <h1 id="voting-status">Status: OBSERVING</h1>
+    <label>
+      <input placeholder="Enter your name" id="name-input">
+      <button id="chose-name">Ok</button>
+    </label>
     <button id="change-voting-status">Change voting status</button>
   </div>
 
@@ -271,6 +284,9 @@
 
     let current_player_voting_type = "PLAYER_OBSERVING"
 
+    let new_name_btn = document.querySelector("#chose-name")
+    let new_name_input = document.querySelector("#name-input")
+
     socket = new WebSocket(ws_url)
 
     socket.onmessage = function (message) {
@@ -333,6 +349,22 @@
         poker_table.innerHTML += formatted
       })
     }
+
+    new_name_btn.addEventListener("click", function () {
+
+      if (new_name_input.value === "") {
+        alert("Name can't be empty")
+        return
+      }
+
+      socket.send(JSON.stringify(
+              {
+                "type" : "CHANGE_PLAYER_NAME",
+                "player_id" : player_id,
+                "message" : new_name_input.value
+              }
+      ))
+    })
 
     change_status_btn.addEventListener("click", function () {
       if (access !== "ADMIN") {

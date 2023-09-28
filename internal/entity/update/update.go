@@ -14,10 +14,12 @@ const (
 
 	ChangeStatus       Type = "CHANGE_STATUS"
 	ChangePlayerStatus Type = "CHANGE_PLAYER_STATUS"
+	ChangePlayerName   Type = "CHANGE_PLAYER_NAME"
 )
 
 type Update struct {
 	Type     Type         `json:"type"`
 	PlayerID uuid.UUID    `json:"player_id"`
 	Vote     *voting.Vote `json:"vote"`
+	Message  string       `json:"message"`
 }

@@ -67,6 +67,14 @@ func (r *Room) Update(u *update.Update) error {
 			}
 			log.Printf("All players in room %s voted, revealing\n", r.ID)
 		}
+	case update.ChangePlayerName:
+		err := r.ChangePlayerName(u.PlayerID, u.Message)
+		if err != nil {
+			log.Printf("Failed change player %v name in room %v: %v\n", r.ID, u.PlayerID, err)
+			return err
+		}
+
+		return nil
 	}
 
 	return nil

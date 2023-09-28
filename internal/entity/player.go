@@ -44,3 +44,8 @@ func (p *Player) ClearVote() error {
 	p.Voted = nil
 	return nil
 }
+
+func (p *Player) SetName(name string) error {
+	p.Name = name
+	return nil
+}
